@@ -14,6 +14,7 @@ exports.changePassword = async (req, res, next) => {
         .json({ message: `Please Login before you can change password` });
     if (!(await user.matchPassword(currentPassword)))
           res.status(401).json({ message: `Current password is not correct` });
+      
       user.password = newPassword;
       await user.save()
 
@@ -21,7 +22,10 @@ exports.changePassword = async (req, res, next) => {
           message:`Password Updated Successfully`
       })
       
-  } catch (er) {
-    console.log(err);
+  } catch (err) {
+      console.log(err.message);
+      res.status(400).json({
+          message: err.message
+      })
   }
 };
