@@ -4,6 +4,11 @@ const { registerUser, loginUser, protect } = require('../controllers/authcontrol
 
 router.post('/register', registerUser)
 router.post('/login', loginUser)
-router.get('/profile', protect)
+router.get('/profile', protect, (req, res) => {
+    const user = req.user
+    res.status(200).json({
+       user
+    })
+})  
 
 module.exports = router
