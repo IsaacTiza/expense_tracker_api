@@ -1,33 +1,45 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs"); // Needed for the hashing logic
 
-const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Please add a name"],
-    trim: true,
-    maxlength: [50, "Name cannot be more than 50 characters"],
+const UserSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Please add a name"],
+      trim: true,
+      maxlength: [50, "Name cannot be more than 50 characters"],
+    },
+    email: {
+      type: String,
+      required: [true, "Please add an email"],
+      unique: true, // Strategic: Ensures no two users share an email
+      lowercase: true,
+      match: [
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        "Please fill a valid email address", // Strategic: Basic email format validation
+      ],
+    },
+    password: {
+      type: String,
+      required: [true, "Please add a password"],
+      minlength: 8, // Strategic: Enforces a minimum password length
+      select: false, // Strategic: Prevents password hash from being returned by default queries
+    },
   },
-  email: {
-    type: String,
-    required: [true, "Please add an email"],
-    unique: true, // Strategic: Ensures no two users share an email
-    lowercase: true,
-    match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      "Please fill a valid email address", // Strategic: Basic email format validation
-    ],
-  },
-  password: {
-    type: String,
-    required: [true, "Please add a password"],
-    minlength: 8, // Strategic: Enforces a minimum password length
-    select: false, // Strategic: Prevents password hash from being returned by default queries
-  },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }, // Strategic: Automatically manage createdAt and updatedAt fields
+  }
+);
+
+//Virtual Population
+UserSchema.virtual("expenses", {
+  ref: `Expense`,
+  localField: `_id`,
+  foreignField: `user`,
   
-}, {
-    timestamps: true, // Strategic: Automatically manage createdAt and updatedAt fields
-});
+})
 
 // --- Mongoose Middleware: Security Feature ---
 // This middleware runs *before* the user is saved to the database.

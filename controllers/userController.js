@@ -1,3 +1,4 @@
+const expenseModel = require("../models/expenseModel");
 const userModel = require("../models/userModel");
 
 exports.changePassword = async (req, res, next) => {
@@ -46,3 +47,35 @@ exports.editUser = async (req, res, next) => {
     });
   }
 };
+exports.getProfile = async (req, res, next) => {
+  const user = await userModel.findById(req.user._id).populate({
+    path: "expenses",
+    select: "-__v -updatedAt -createdAt ",
+  });
+  if (!user) {
+    throw new Error("Please Log in !");
+  }
+  const message = `Welcome ${user.name}`;
+  res.status(200).json({
+    message,
+    user,
+  });
+};
+exports.getMyExpense = async (req, res, next) => {
+  const userId = req.user._id;
+  if (!(await userModel.findById(userId))) {
+    throw new Error("Please Login!")
+  }
+  const expenses = await expenseModel.find({ user: userId }).select("-__v -updatedAt -createdAt")
+  
+  const message =
+    expenses.length > 1
+      ? `${req.user.name}! You have ${expenses.length} expenses`
+      : `${req.user.name}! You have only ${expenses.length} expenses`;
+  
+  const messages = expenses.length< 1? `${req.user.name}! You don't have any expenses yet!`:message
+  res.status(200).json({
+    messages,
+    expenses
+  })
+}
