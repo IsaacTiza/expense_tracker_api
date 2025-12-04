@@ -40,7 +40,6 @@ UserSchema.virtual("expenses", {
   foreignField: `user`,
   
 })
-
 // --- Mongoose Middleware: Security Feature ---
 // This middleware runs *before* the user is saved to the database.
 
