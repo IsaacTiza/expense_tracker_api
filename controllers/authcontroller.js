@@ -11,7 +11,7 @@ exports.registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
     const newUser = await userModel.create({ name, email, password });
-    const token = generateToken(loggedInUser._id);
+    const token = generateToken(newUser._id);
     res.status(201).json({
         message: `User Registered Successfully`,
         token,

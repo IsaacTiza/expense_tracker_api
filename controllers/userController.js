@@ -62,6 +62,17 @@ exports.getProfile = async (req, res, next) => {
   });
 };
 exports.getMyExpense = async (req, res, next) => {
+  const queryObj = { ...req.query }
+  const matchedFields = ['limit', 'sort', 'page', 'fields']
+  
+
+  console.log(req.query)
+
+
+
+
+
+
   const userId = req.user._id;
   if (!(await userModel.findById(userId))) {
     throw new Error("Please Login!")

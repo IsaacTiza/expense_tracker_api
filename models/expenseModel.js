@@ -28,13 +28,12 @@ const expenseSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       maxlength: [30, "Payment Method cannot be more than 30 characters"],
-      trim: true,
     },
     currency: {
       required: [true, "Plaese provide a Currency for this Expense"],
       type: String,
-      enum: ['NGN', 'USD', 'GBP', 'EUR'],
-      default: 'NGN'
+      enum: ["NGN", "USD", "GBP", "EUR"],
+      default: "NGN",
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
