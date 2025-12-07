@@ -1,5 +1,6 @@
 const expenseModel = require("../models/expenseModel");
 const userModel = require("../models/userModel");
+const APIFeatures = require("../utils/apiFeatures");
 
 exports.changePassword = async (req, res, next) => {
   try {
@@ -62,31 +63,28 @@ exports.getProfile = async (req, res, next) => {
   });
 };
 exports.getMyExpense = async (req, res, next) => {
-  const queryObj = { ...req.query }
-  const matchedFields = ['limit', 'sort', 'page', 'fields']
-  
-
-  console.log(req.query)
-
-
-
-
-
+  const features = new APIFeatures(expenseModel.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
 
   const userId = req.user._id;
   if (!(await userModel.findById(userId))) {
-    throw new Error("Please Login!")
+    throw new Error("Please Login!");
   }
-  const expenses = await expenseModel.find({ user: userId }).select("-__v -updatedAt -createdAt")
-  
+  const expenses = await features.query;
   const message =
     expenses.length > 1
       ? `${req.user.name}! You have ${expenses.length} expenses`
       : `${req.user.name}! You have only ${expenses.length} expenses`;
-  
-  const messages = expenses.length< 1? `${req.user.name}! You don't have any expenses yet!`:message
+
+  const messages =
+    expenses.length < 1
+      ? `${req.user.name}! You don't have any expenses yet!`
+      : message;
   res.status(200).json({
     messages,
-    expenses
-  })
-}
+    expenses,
+  });
+};
