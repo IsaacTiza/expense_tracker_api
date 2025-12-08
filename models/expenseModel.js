@@ -17,8 +17,7 @@ const expenseSchema = new mongoose.Schema(
     date: {
       type: Date,
       required: [true, "Please provide a date for this expense"],
-      default: Date.now,
-      unique: true,
+      default: Date.now
     },
     category: {
       type: String,
