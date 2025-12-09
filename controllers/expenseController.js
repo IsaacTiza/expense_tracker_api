@@ -99,13 +99,14 @@ exports.getUsersExpense = async (req, res, next) => {
 exports.getMonthlyStats = async (req, res, next) => {
   try {
     const monthlyStats = await expenseModel.aggregate([
-      { $match: { user: req.user._id } },
+      { $match: { user: req.user._id.toString() } },
       {
         $group: {
           _id: {
-            year: { $year: `$date` },
-            month: { $month: `$date` },
+            year: { $year: {$toDate:`$date`} },
+            month: { $month: {$toDate:`$date`} },
           },
+          title:{$addToSet:`$title`},
           totalAmount: { $sum: `$amount` },
           averageAmount: { $avg: `$amount` },
           count: { $sum: 1 },
@@ -114,8 +115,9 @@ exports.getMonthlyStats = async (req, res, next) => {
       {
         $project: {
           _id: 0,
+          title:1,
           year: `$_id.year`,
-          moth: `$_id.month`,
+          month: `$_id.month`,
           totalAmount: 1,
           averageAmount: 1,
           count: 1,
@@ -123,19 +125,80 @@ exports.getMonthlyStats = async (req, res, next) => {
       },
       { $sort: { year: -1, month: -1 } },
     ]);
-      res.status(200).json({
-        result: monthlyStats.length,
-        monthlyStats,
-      });
-  }
-  catch (err) {
-    console.log(err)
+    res.status(200).json({
+      result: monthlyStats.length,
+      monthlyStats,
+    });
+  } catch (err) {
+    console.log(err);
   }
 };
 exports.getCategoryStats = async (req, res, next) => {
   try {
-    console.log(req.user._id)
+    console.log(req.user._id);
     const categoryStats = await expenseModel.aggregate([
+    
+      { $match: { user: req.user._id.toString() } },
+      {
+        $group: {
+          _id: `$category`,
+          title: {$addToSet:`$title`},
+          totalAmount: { $sum: `$amount` },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          title: 1,
+          category: `$_id`,
+          totalAmount: 1,
+          count: 1,
+        },
+      },
+      { $sort: { totalAmount: -1 } },
+      // {$count:`total`}
+    ]);
+    res.status(200).json({
+      result: categoryStats.length,
+      categoryStats,
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+exports.getPaymentMethodStats = async (req, res, next) => {
+  try {
+    const paymentMethodStats = await expenseModel.aggregate([
+      { $match: { user: req.user._id.toString() } },
+      {
+        $group: {
+          _id: `$paymentMethod`,
+          title:{$addToSet:`$title`},
+          totalAmount: { $sum: `$amount` },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          paymentMethod: `$_id`,
+          totalAmount: 1,
+          title:1
+        },
+      },
+      { $sort: { totalAmount: -1 } },
+    ]);
+    res.status(200).json({
+      result: paymentMethodStats.length,
+      paymentMethodStats,
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+exports.getTopCategory = async (req, res, next) => {
+  try {
+    const topCategory = await expenseModel.aggregate([
       { $match: { user: req.user._id.toString() } },
       {
         $group: {
@@ -151,70 +214,14 @@ exports.getCategoryStats = async (req, res, next) => {
         },
       },
       { $sort: { totalAmount: -1 } },
+      { $limit: 1 },
     ]);
     res.status(200).json({
-      result: categoryStats.length,
-      categoryStats,
+      result: topCategory.length,
+      topCategory,
     });
   } catch (err) {
     console.log(err);
   }
 };
-exports.getPaymentMethodStats = async (req, res, next) => {
-  try {
-    const paymentMethodStats = await expenseModel.aggregate([
-      { $match: { user: req.user._id } },
-      {
-        $group: {
-          _id: `$paymentMethod`,
-          totalAmount: { $sum: `$amount` }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          paymentMethod: `$_id`,
-          totalAmount: 1
-        }
-      },
-      { $sort: { totalAmount: -1 } }
-    ]);
-    res.status(200).json({
-      result: paymentMethodStats.length,
-      paymentMethodStats,
-    });
-  }
-  catch (err) {
-    console.log(err)
-  }
-}
-exports.getTopCategory = async (req, res, next) => {
-  try {
-    const topCategory = await expenseModel.aggregate([
-      { $match: { user: req.user._id } },
-      {
-        $group: {
-          _id: `$category`,
-          totalAmount: { $sum: `$amount` }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          category: `$_id`,
-          totalAmount: 1
-        }
-      },
-      { $sort: { totalAmount: -1 } },
-      { $limit: 1 }
-    ])
-      res.status(200).json({
-        result: topCategory.length,
-        topCategory,
-      });
-  }
-  catch (err) {
-    console.log(err)
-  }
-}
 
