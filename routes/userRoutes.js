@@ -4,8 +4,8 @@ const { editUser, getProfile, getMyExpense } = require('../controllers/userContr
 const router = express.Router()
 
 
-router.post('/edit_profile', protect, editUser)
-router.get('/my_profile', protect, getProfile)
-router.get('/my_expenses',protect, getMyExpense)
+router.post('/edit-profile', protect, editUser)
+router.get('/my-profile', protect, getProfile)
+router.get('/my-expenses',protect, getMyExpense)
 
 module.exports = router
